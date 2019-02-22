@@ -5,20 +5,23 @@ import React, { useState, useEffect } from 'react';
 import './styles.css';
 import { api } from '../API';
 import { delay } from '../instruments';
-
-// Hooks
 import { useDebounce } from './useDebounce';
+import { getModal } from './modal';
 
-// ↓ render()
+
 export const Search = () => {
-    // 1. ✓ input контроллируемым
-    // 2. ✓ высылать запрос к серверу
-    // 3. ✓ получаем страны
-    // 4. вывести результат на экран
-
     const [ filter, setFilter ] = useState('');
     const [ countries, setCountries ] = useState([]);
     const [ isFetching, setIsFetching ] = useState(false);
+    const [ isModalOpend, setModalOpen ] = useState(false);
+    const [ currentCountry, setCurrentCountry ] = useState({});
+
+    const showModal = (country) => {
+        setFilter(country.name);
+        setModalOpen(true);
+
+        setCurrentCountry(country);
+    };
 
     const getCountries = async () => {
         setIsFetching(true);
@@ -28,14 +31,6 @@ export const Search = () => {
         setIsFetching(false);
     };
 
-    // debounce
-
-    /**
-     * dangerouslySetInnerHtml — ❌
-     * dangerouslySetInnerHtml — ✅
-     * 1. Рассмотрим юзкейс
-     * 2. Годится для временных рамок формата воркшоп
-     */
     const regexp = new RegExp(filter, 'g');
     const countriesJSX = countries.map((country) => {
         const name = country.name.replace(
@@ -49,7 +44,9 @@ export const Search = () => {
         );
 
         return (
-            <li key = { country.emoji }>
+            <li
+                key = { country.emoji }
+                onClick = { () => showModal(country) } >
                 <span
                     className = 'country'
                     dangerouslySetInnerHTML = {{
@@ -61,9 +58,9 @@ export const Search = () => {
         );
     });
 
-    const debouncedFilter = useDebounce(filter, 200);
+    const debouncedFilter = useDebounce(filter);
+
     useEffect(() => {
-        console.log(debouncedFilter);
         getCountries();
     }, [ debouncedFilter ]);
 
@@ -71,17 +68,18 @@ export const Search = () => {
         <section className = 'strange-search'>
             <span className = 'strange'>Странный</span>
             <input
-                placeholder = 'Страна или континент'
+                placeholder = 'странна или континент'
                 style = {{
-                    '--inputBorderStyle': isFetching ? 'dashed' : 'solid',
+                    '--inputBorderStyle': isFetching ?  'dashed' : 'solid',
                 }}
                 type = 'text'
                 value = { filter }
                 onChange = { (event) => setFilter(event.target.value) }
             />
             <span className = 'search'>поиск</span>
-            <ul>{countriesJSX}</ul>
+            <ul>{ countriesJSX }</ul>
             <b />
+            { isModalOpend ? getModal(currentCountry, setModalOpen, setFilter) : null}
         </section>
     );
 };

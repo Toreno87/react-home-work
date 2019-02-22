@@ -14,7 +14,7 @@ export const api = new class Api extends Config {
     }
 
     async getMovies(filter = 'upcoming') {
-        const response = await fetch(`${this.MAIN_URI}/afisha/api/${filter}`, {
+        const response = await fetch(`${this.BASE_URI}/afisha/api/${filter}`, {
             method: 'GET',
         });
         const result = await response.json();
